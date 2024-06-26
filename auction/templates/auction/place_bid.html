@@ -1,0 +1,33 @@
+{% extends 'auction/base.html' %}
+
+{% block title %}Place Bid{% endblock %}
+
+{% block content %}
+    <div class="mt-4">
+        <h1 class="mb-4">Place Bid for {{ item.title }}</h1>
+        <p>{{ item.description }}</p>
+        <p>Starting Price: ${{ item.starting_price }}</p>
+        <p>Start Time: {{ item.start_time }}</p>
+        <p>End Time: {{ item.end_time }}</p>
+
+        {% if item.image %}
+            <img src="{{ item.image.url }}" class="img-fluid mb-4" alt="{{ item.title }}">
+        {% endif %}
+
+        <h3>Current Bids:</h3>
+        <ul class="list-group mb-4">
+            {% for bid in item.bids.all %}
+                <li class="list-group-item">{{ bid.user.username }}: ${{ bid.amount }}</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Place a Bid:</h3>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Place Bid</button>
+        </form>
+
+        <a href="{% url 'item_detail' item.id %}" class="btn btn-secondary mt-4">Back to Item</a>
+    </div>
+{% endblock %}

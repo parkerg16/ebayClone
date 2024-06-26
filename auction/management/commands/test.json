@@ -1,0 +1,20 @@
+[
+    {
+        "username": "testuser",
+        "title": "Test Item 1",
+        "description": "This is a test item.",
+        "category": "Electronics",
+        "starting_price": 100.00,
+        "start_time": "2024-01-01T00:00:00Z",
+        "end_time": "2024-01-10T00:00:00Z"
+    },
+    {
+        "username": "testuser",
+        "title": "Test Item 2",
+        "description": "This is another test item.",
+        "category": "Books",
+        "starting_price": 50.00,
+        "start_time": "2024-01-01T00:00:00Z",
+        "end_time": "2024-01-10T00:00:00Z"
+    }
+]

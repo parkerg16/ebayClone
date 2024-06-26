@@ -1,0 +1,39 @@
+{% extends 'auction/base.html' %}
+
+{% block title %}{{ item.title }}{% endblock %}
+
+{% block content %}
+    <div class="mt-4">
+        <h1 class="mb-4">{{ item.title }}</h1>
+        {% if item.image %}
+            <img src="{{ item.image.url }}" class="img-fluid mb-4" alt="{{ item.title }}">
+        {% endif %}
+        <p>{{ item.description }}</p>
+        <p>Starting Price: ${{ item.starting_price }}</p>
+        <p>Start Time: {{ item.start_time }}</p>
+        <p>End Time: {{ item.end_time }}</p>
+        <h3>Current Bids:</h3>
+        <ul class="list-group mb-4">
+            {% for bid in bids %}
+                <li class="list-group-item">{{ bid.user.username }}: ${{ bid.amount }}</li>
+            {% endfor %}
+        </ul>
+
+        {% if user.is_authenticated %}
+            {% if user == item.user %}
+                <a href="{% url 'delete_item' item.id %}" class="btn btn-danger">Delete</a>
+            {% else %}
+                <h3>Place a Bid:</h3>
+                <form method="post" action="{% url 'place_bid' item.id %}">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary">Place Bid</button>
+                </form>
+            {% endif %}
+        {% else %}
+            <p>You must <a href="{% url 'login' %}">login</a> to place a bid or delete an item.</p>
+        {% endif %}
+
+        <a href="{% url 'item_list' item.category.id %}" class="btn btn-secondary mt-4">Back to Category</a>
+    </div>
+{% endblock %}
