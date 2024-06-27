@@ -108,7 +108,30 @@ def place_bid(request, item_id):
 def item_detail(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
     bids = item.bids.all()
-    return render(request, 'auction/item_detail.html', {'item': item, 'bids': bids})
+    highest_bid = bids.order_by('-amount').first()
+
+    if request.method == 'POST':
+        form = BidForm(request.POST)
+        if form.is_valid():
+            bid = form.save(commit=False)
+            bid.user = request.user
+            bid.item = item
+
+            if request.user == item.user:
+                form.add_error(None, 'You cannot bid on your own item.')
+
+            if highest_bid and bid.amount <= highest_bid.amount:
+                form.add_error('amount', 'Bid must be higher than the current highest bid.')
+            elif not highest_bid and bid.amount <= item.starting_price:
+                form.add_error('amount', 'Bid must be higher than the starting price.')
+
+            if not form.errors:
+                bid.save()
+                return redirect('item_detail', item_id=item.id)
+    else:
+        form = BidForm()
+
+    return render(request, 'auction/item_detail.html', {'item': item, 'bids': bids, 'form': form, 'highest_bid': highest_bid})
 
 
 def item_list(request, category_id):
