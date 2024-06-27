@@ -1,0 +1,18 @@
+/.venv/pyvenv.cfg
+
+# Ignore Virtual Environment
+.venv/
+
+# Ignore our database
+
+*.sqlite3
+
+# Ignore our static files
+/media
+/static
+
+# Ignore our image files
+*.png
+*.jpg
+*.jpeg
+
