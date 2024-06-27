@@ -28,8 +28,7 @@
                         </div>
                         <div class="form-group">
                             <label for="id_description">Description</label>
-                            <textarea name="description" class="form-control" id="id_description" rows="5"
-                                      required></textarea>
+                            <textarea name="description" class="form-control" id="id_description" rows="5" required></textarea>
                         </div>
                         <div class="form-group">
                             <label for="id_category">Category</label>
@@ -40,25 +39,21 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="id_condition">Category</label>
-                            <select name="category" class="form-control" id="id_condition" required>
-                                {% for condtion in form.fields.condition.queryset %}
-                                <option value="{{ category.id }}">{{ condition.name }}</option>
+                            <label for="id_condition">Condition</label>
+                            <select name="condition" class="form-control" id="id_condition" required>
+                                {% for condition in form.fields.condition.queryset %}
+                                <option value="{{ condition.id }}">{{ condition.title }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-
                         <div class="form-group">
                             <label for="id_starting_price">Starting Price</label>
-                            <input type="number" name="starting_price" class="form-control" id="id_starting_price"
-                                   step="0.01" required>
+                            <input type="number" name="starting_price" class="form-control" id="id_starting_price" step="0.01" required>
                         </div>
                         <div class="form-group">
                             <label for="id_image">Image</label>
-                            <input type="file" name="image" class="form-control-file" id="id_image" accept="image/*"
-                                   onchange="previewImage(event)">
-                            <img id="image_preview" src="#" alt="Image Preview" class="img-fluid mt-2"
-                                 style="display: none;">
+                            <input type="file" name="image" class="form-control-file" id="id_image" accept="image/*" onchange="previewImage(event)">
+                            <img id="image_preview" src="#" alt="Image Preview" class="img-fluid mt-2" style="display: none;">
                         </div>
                         <button type="submit" class="btn btn-primary btn-block">Submit</button>
                     </form>

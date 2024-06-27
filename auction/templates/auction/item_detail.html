@@ -3,37 +3,76 @@
 {% block title %}{{ item.title }}{% endblock %}
 
 {% block content %}
-    <div class="mt-4">
-        <h1 class="mb-4">{{ item.title }}</h1>
-        {% if item.image %}
-            <img src="{{ item.image.url }}" class="img-fluid mb-4" alt="{{ item.title }}">
-        {% endif %}
-        <p>{{ item.description }}</p>
-        <p>Starting Price: ${{ item.starting_price }}</p>
-        <p>Start Time: {{ item.start_time }}</p>
-        <p>End Time: {{ item.end_time }}</p>
-        <h3>Current Bids:</h3>
-        <ul class="list-group mb-4">
-            {% for bid in bids %}
-                <li class="list-group-item">{{ bid.user.username }}: ${{ bid.amount }}</li>
-            {% endfor %}
-        </ul>
-
-        {% if user.is_authenticated %}
-            {% if user == item.user %}
-                <a href="{% url 'delete_item' item.id %}" class="btn btn-danger">Delete</a>
-            {% else %}
-                <h3>Place a Bid:</h3>
-                <form method="post" action="{% url 'place_bid' item.id %}">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <button type="submit" class="btn btn-primary">Place Bid</button>
-                </form>
-            {% endif %}
-        {% else %}
-            <p>You must <a href="{% url 'login' %}">login</a> to place a bid or delete an item.</p>
-        {% endif %}
-
-        <a href="{% url 'item_list' item.category.id %}" class="btn btn-secondary mt-4">Back to Category</a>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.title }}" style="height: 400px; object-fit: cover;">
+                {% else %}
+                    <img src="https://via.placeholder.com/400" class="card-img-top img-fluid" alt="No image available" style="height: 400px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h2 class="card-title">{{ item.title }}</h2>
+                    <p class="card-text">{{ item.description }}</p>
+                    <p class="card-text"><strong>Category:</strong> {{ item.category.name }}</p>
+                    <p class="card-text"><strong>Condition:</strong> {{ item.condition.title }}</p>
+                    <p class="card-text"><strong>Starting Price:</strong> ${{ item.starting_price }}</p>
+                    <p class="card-text"><strong>Start Time:</strong> {{ item.start_time }}</p>
+                    <p class="card-text"><strong>End Time:</strong> {{ item.end_time }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Current Bids</h3>
+                </div>
+                <div class="card-body">
+                    {% if bids %}
+                        <ul class="list-group">
+                            {% for bid in bids %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>{{ bid.user.username }}: ${{ bid.amount }}</span>
+                                    <span class="badge badge-primary badge-pill">{{ bid.bid_time }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No bids yet. Be the first to place a bid!</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3>Place a Bid</h3>
+                </div>
+                <div class="card-body">
+                    {% if user.is_authenticated %}
+                        {% if user == item.user %}
+                            <a href="{% url 'delete_item' item.id %}" class="btn btn-danger">Delete</a>
+                        {% else %}
+                            <form method="post" action="{% url 'place_bid' item.id %}">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="id_amount">Bid Amount</label>
+                                    {{ form.amount }}
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">Place Bid</button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <p>You must <a href="{% url 'login' %}">login</a> to place a bid or delete an item.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
+    <a href="{% url 'item_list' item.category.id %}" class="btn btn-secondary mt-4">Back to Category</a>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 {% endblock %}
