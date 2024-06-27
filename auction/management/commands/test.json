@@ -1,20 +1,82 @@
 [
     {
-        "username": "testuser",
-        "title": "Test Item 1",
-        "description": "This is a test item.",
+        "title": "Vintage Camera",
+        "description": "A classic vintage camera from the 1950s. Still in working condition.",
         "category": "Electronics",
-        "starting_price": 100.00,
-        "start_time": "2024-01-01T00:00:00Z",
-        "end_time": "2024-01-10T00:00:00Z"
+        "username": "user1",
+        "starting_price": "150.00",
+        "image": "auction/management/commands/images/vintage_camera.jpg"
     },
     {
-        "username": "testuser",
-        "title": "Test Item 2",
-        "description": "This is another test item.",
-        "category": "Books",
-        "starting_price": 50.00,
-        "start_time": "2024-01-01T00:00:00Z",
-        "end_time": "2024-01-10T00:00:00Z"
+        "title": "Antique Clock",
+        "description": "A beautiful antique clock with intricate designs. Perfect for collectors.",
+        "category": "Antiques",
+        "username": "user1",
+        "starting_price": "300.00",
+        "image": "auction/management/commands/images/antique_clock.jpg"
+    },
+    {
+        "title": "Leather Jacket",
+        "description": "Stylish leather jacket, size M. Worn only a few times.",
+        "category": "Clothing",
+        "username": "user1",
+        "starting_price": "80.00",
+        "image": "auction/management/commands/images/leather_jacket.jpg"
+    },
+    {
+        "title": "Mountain Bike",
+        "description": "A rugged mountain bike, ideal for off-road trails. 21-speed gear.",
+        "category": "Sports Equipment",
+        "username": "user1",
+        "starting_price": "250.00",
+        "image": "auction/management/commands/images/mountain_bike.jpg"
+    },
+    {
+        "title": "Gaming Console",
+        "description": "Latest generation gaming console, includes 2 controllers and 3 games.",
+        "category": "Electronics",
+        "username": "user1",
+        "starting_price": "400.00",
+        "image": "auction/management/commands/images/gaming_console.jpg"
+    },
+    {
+        "title": "Dining Table Set",
+        "description": "Modern dining table set with 6 chairs. Made of solid wood.",
+        "category": "Furniture",
+        "username": "user1",
+        "starting_price": "500.00",
+        "image": "auction/management/commands/images/dining_table_set.jpg"
+    },
+    {
+        "title": "Electric Guitar",
+        "description": "Electric guitar in excellent condition, includes amplifier and case.",
+        "category": "Musical Instruments",
+        "username": "user1",
+        "starting_price": "300.00",
+        "image": "auction/management/commands/images/electric_guitar.jpg"
+    },
+    {
+        "title": "Smartwatch",
+        "description": "Smartwatch with fitness tracking and GPS. Compatible with Android and iOS.",
+        "category": "Electronics",
+        "username": "user1",
+        "starting_price": "120.00",
+        "image": "auction/management/commands/images/smartwatch.jpg"
+    },
+    {
+        "title": "Lawn Mower",
+        "description": "Electric lawn mower, suitable for small to medium gardens. Easy to use.",
+        "category": "Garden Equipment",
+        "username": "user1",
+        "starting_price": "200.00",
+        "image": "auction/management/commands/images/lawn_mower.jpg"
+    },
+    {
+        "title": "Cookware Set",
+        "description": "Complete cookware set, includes pots, pans, and utensils. Non-stick.",
+        "category": "Home & Kitchen",
+        "username": "user1",
+        "starting_price": "100.00",
+        "image": "auction/management/commands/images/cookware_set.jpg"
     }
 ]

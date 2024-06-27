@@ -1,6 +1,8 @@
 import json
+import os
 from django.core.management.base import BaseCommand
 from auction.models import Item, Category, User
+from django.core.files import File
 
 class Command(BaseCommand):
     help = 'Ingest items from a JSON file'
@@ -25,6 +27,13 @@ class Command(BaseCommand):
                     user=user,
                     starting_price=item_data['starting_price']
                 )
+
+                # Handle the image file
+                image_path = item_data.get('image')
+                if image_path and os.path.exists(image_path):
+                    with open(image_path, 'rb') as image_file:
+                        item.image.save(os.path.basename(image_path), File(image_file), save=False)
+
                 item.save()
                 self.stdout.write(self.style.SUCCESS(f"Successfully added item: {item.title}"))
             except User.DoesNotExist:
