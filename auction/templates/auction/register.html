@@ -12,18 +12,18 @@
                 </div>
                 <div class="card-body">
                     {% if form.errors %}
-                    <div class="alert alert-danger" role="alert">
-                        <ul>
-                            {% for field in form %}
-                            {% for error in field.errors %}
-                            <li>{{ error }}</li>
-                            {% endfor %}
-                            {% endfor %}
-                            {% for error in form.non_field_errors %}
-                            <li>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
+                        <div class="alert alert-danger" role="alert">
+                            <ul>
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     {% endif %}
                     <form method="post">
                         {% csrf_token %}
@@ -31,24 +31,30 @@
                             <label for="id_username">Username</label>
                             <input type="text" name="username" class="form-control" id="id_username" required>
                         </div>
+                          <div class="form-group">
+                            <label for="id_email_address">Email Address</label>
+                            <input type="email" name="email_address" class="form-control" id="id_email_address" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_first_name">First Name</label>
+                            <input type="text" name="first_name" class="form-control" id="id_first_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_last_name">Last Name</label>
+                            <input type="text" name="last_name" class="form-control" id="id_last_name" required>
+                        </div>
                         <div class="form-group">
                             <label for="id_password1">Password</label>
                             <input type="password" name="password1" class="form-control" id="id_password1" required>
-                            <small class="form-text text-muted">Password must be at least 8 characters long and contain
-                                a mix of letters, numbers, and symbols.</small>
+                            <small class="form-text text-muted">Password must be at least 8 characters long and contain a mix of letters, numbers, and symbols.</small>
                         </div>
                         <div class="form-group">
                             <label for="id_password2">Confirm Password</label>
                             <input type="password" name="password2" class="form-control" id="id_password2" required>
                         </div>
                         <div class="form-group">
-                            <label for="id_real_name">Real Name</label>
-                            <input type="text" name="real_name" class="form-control" id="id_real_name" required>
-                        </div>
-                        <div class="form-group">
                             <label for="id_shipping_address">Shipping Address</label>
-                            <input type="text" name="shipping_address" class="form-control" id="id_shipping_address"
-                                   required>
+                            <input type="text" name="shipping_address" class="form-control" id="id_shipping_address" required>
                         </div>
                         <div class="form-group">
                             <label for="id_credit_card_info">Credit Card Info</label>
@@ -70,16 +76,16 @@
 <!-- Google Places API -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAc1WNyZSYrcMIhw1UCaHZx68EzZbcQK1g&libraries=places"></script>
 <script>
-    function initAutocomplete() {
-        var input = document.getElementById('id_shipping_address');
-        var autocomplete = new google.maps.places.Autocomplete(input);
-        autocomplete.setFields(['formatted_address']);
-        autocomplete.addListener('place_changed', function () {
-            var place = autocomplete.getPlace();
-            document.getElementById('id_shipping_address').value = place.formatted_address;
-        });
-    }
+function initAutocomplete() {
+    var input = document.getElementById('id_shipping_address');
+    var autocomplete = new google.maps.places.Autocomplete(input);
+    autocomplete.setFields(['formatted_address']);
+    autocomplete.addListener('place_changed', function() {
+        var place = autocomplete.getPlace();
+        document.getElementById('id_shipping_address').value = place.formatted_address;
+    });
+}
 
-    google.maps.event.addDomListener(window, 'load', initAutocomplete);
+google.maps.event.addDomListener(window, 'load', initAutocomplete);
 </script>
 {% endblock %}

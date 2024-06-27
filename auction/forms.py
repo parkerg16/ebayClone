@@ -4,13 +4,11 @@ from .models import User, Item, Category, Bid
 
 
 class RegistrationForm(UserCreationForm):
-    real_name = forms.CharField(max_length=255)
-    shipping_address = forms.CharField(widget=forms.Textarea)
-    credit_card_info = forms.CharField(max_length=255, required=False)
-
     class Meta:
         model = User
-        fields = ['username', 'real_name', 'password1', 'password2', 'shipping_address', 'credit_card_info']
+        fields = ['username', 'first_name', 'last_name', 'email_address', 'password1', 'password2', 'shipping_address',
+                  'credit_card_info']
+
 
 class ItemForm(forms.ModelForm):
     class Meta:
