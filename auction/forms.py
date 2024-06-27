@@ -13,7 +13,7 @@ class RegistrationForm(UserCreationForm):
 class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
-        fields = ['title', 'description', 'category', 'image', 'starting_price']
+        fields = ['title', 'description', 'condition', 'category', 'image', 'starting_price']
 
 
 class BidForm(forms.ModelForm):

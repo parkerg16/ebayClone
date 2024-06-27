@@ -1,14 +1,88 @@
 {% extends 'auction/base.html' %}
 
-{% block title %}Submit New Item{% endblock %}
+{% block title %}Submit a New Item{% endblock %}
 
 {% block content %}
-    <div class="mt-4">
-        <h1 class="mb-4">Submit New Item</h1>
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Submit a New Item</h2>
+                </div>
+                <div class="card-body">
+                    {% if form.errors %}
+                    <div class="alert alert-danger" role="alert">
+                        <ul>
+                            {% for field, errors in form.errors.items %}
+                            <li>{{ field|capfirst }}: {{ errors|striptags }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="id_title">Title</label>
+                            <input type="text" name="title" class="form-control" id="id_title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_description">Description</label>
+                            <textarea name="description" class="form-control" id="id_description" rows="5"
+                                      required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_category">Category</label>
+                            <select name="category" class="form-control" id="id_category" required>
+                                {% for category in form.fields.category.queryset %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_condition">Category</label>
+                            <select name="category" class="form-control" id="id_condition" required>
+                                {% for condtion in form.fields.condition.queryset %}
+                                <option value="{{ category.id }}">{{ condition.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_starting_price">Starting Price</label>
+                            <input type="number" name="starting_price" class="form-control" id="id_starting_price"
+                                   step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_image">Image</label>
+                            <input type="file" name="image" class="form-control-file" id="id_image" accept="image/*"
+                                   onchange="previewImage(event)">
+                            <img id="image_preview" src="#" alt="Image Preview" class="img-fluid mt-2"
+                                 style="display: none;">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Image Preview Script -->
+<script>
+    function previewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            var output = document.getElementById('image_preview');
+            output.src = reader.result;
+            output.style.display = 'block';
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+</script>
 {% endblock %}

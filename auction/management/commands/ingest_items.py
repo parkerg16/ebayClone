@@ -1,8 +1,9 @@
 import json
 import os
 from django.core.management.base import BaseCommand
-from auction.models import Item, Category, User
+from auction.models import Item, Category, User, ItemCondition
 from django.core.files import File
+
 
 class Command(BaseCommand):
     help = 'Ingest items from a JSON file'
@@ -20,11 +21,14 @@ class Command(BaseCommand):
             try:
                 user = User.objects.get(username=item_data['username'])
                 category, created = Category.objects.get_or_create(name=item_data['category'])
+                condition, created = ItemCondition.objects.get_or_create(title=item_data['condition'])
+
                 item = Item(
                     title=item_data['title'],
                     description=item_data['description'],
                     category=category,
                     user=user,
+                    condition=condition,
                     starting_price=item_data['starting_price']
                 )
 
