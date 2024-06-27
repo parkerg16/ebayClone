@@ -1,7 +1,6 @@
 import json
 from django.core.management.base import BaseCommand
 from auction.models import Item, Category, User
-from django.utils.dateparse import parse_datetime
 
 class Command(BaseCommand):
     help = 'Ingest items from a JSON file'
@@ -24,9 +23,7 @@ class Command(BaseCommand):
                     description=item_data['description'],
                     category=category,
                     user=user,
-                    starting_price=item_data['starting_price'],
-                    start_time=parse_datetime(item_data['start_time']),
-                    end_time=parse_datetime(item_data['end_time'])
+                    starting_price=item_data['starting_price']
                 )
                 item.save()
                 self.stdout.write(self.style.SUCCESS(f"Successfully added item: {item.title}"))
