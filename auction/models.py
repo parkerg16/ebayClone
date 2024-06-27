@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-
+from django.utils import timezone
+from datetime import timedelta
 
 class User(AbstractUser):
     real_name = models.CharField(max_length=255)
@@ -9,7 +10,7 @@ class User(AbstractUser):
 
     groups = models.ManyToManyField(
         'auth.Group',
-        related_name='auction_users',  # Add related_name here
+        related_name='auction_users',
         blank=True,
         help_text='The groups this user belongs to.',
         verbose_name='groups'
@@ -17,11 +18,12 @@ class User(AbstractUser):
 
     user_permissions = models.ManyToManyField(
         'auth.Permission',
-        related_name='auction_users_permissions',  # Add related_name here
+        related_name='auction_users_permissions',
         blank=True,
         help_text='Specific permissions for this user.',
         verbose_name='user permissions'
     )
+
 class Category(models.Model):
     name = models.CharField(max_length=255)
     parent_category = models.ForeignKey('self', null=True, blank=True, related_name='subcategories', on_delete=models.CASCADE)
@@ -36,8 +38,14 @@ class Item(models.Model):
     user = models.ForeignKey(User, related_name='items', on_delete=models.PROTECT)
     image = models.ImageField(upload_to='item_images/', blank=True, null=True)
     starting_price = models.DecimalField(max_digits=10, decimal_places=2)
-    start_time = models.DateTimeField()
+    start_time = models.DateTimeField(default=timezone.now, editable=False)
     end_time = models.DateTimeField()
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.start_time = timezone.now()
+            self.end_time = self.start_time + timedelta(days=7)  # Auctions will last 7 days
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title

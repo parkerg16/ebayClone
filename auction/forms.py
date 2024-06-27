@@ -15,11 +15,8 @@ class RegistrationForm(UserCreationForm):
 class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
-        fields = ['title', 'description', 'category', 'image', 'starting_price', 'start_time', 'end_time']
-        widgets = {
-            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        }
+        fields = ['title', 'description', 'category', 'image', 'starting_price']
+
 
 class BidForm(forms.ModelForm):
     class Meta:
