@@ -6,23 +6,58 @@
 <div class="container mt-4">
     <h1 class="mb-4">{{ category.name }}</h1>
     <div class="row">
-        {% for item in items %}
+        {% for item_with_bid in items_with_bids %}
             <div class="col-md-3 col-sm-6 mb-4">
                 <div class="card">
-                    {% if item.image %}
-                        <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.title }}" style="height: 200px; object-fit: cover;">
+                    {% if item_with_bid.item.image %}
+                        <img src="{{ item_with_bid.item.image.url }}" class="card-img-top img-fluid" alt="{{ item_with_bid.item.title }}" style="height: 200px; object-fit: cover;">
                     {% else %}
                         <img src="https://via.placeholder.com/150" class="card-img-top img-fluid" alt="No image available" style="height: 200px; object-fit: cover;">
                     {% endif %}
                     <div class="card-body">
-                        <h5 class="card-title">{{ item.title }}</h5>
-                        <p class="card-text">Starting Price: ${{ item.starting_price }}</p>
-                        <p class="card-text">Current Bid: ${{bid.item.amount}}</p>
-                        <a href="{% url 'item_detail' item.id %}" class="btn btn-primary">View Details</a>
+                        <h5 class="card-title">{{ item_with_bid.item.title }}</h5>
+                        <p class="card-text">Starting Price: ${{ item_with_bid.item.starting_price }}</p>
+                        <p class="card-text">Current Bid: ${{ item_with_bid.highest_bid }}</p>
+                        <p class="card-text">End Date: {{ item_with_bid.item.end_time }}</p>
+                        <p class="card-text">Time Remaining: <span class="time-remaining" data-end-time="{{ item_with_bid.item.end_time|date:'c' }}"></span></p>
+                        <a href="{% url 'item_detail' item_with_bid.item.id %}" class="btn btn-primary">View Details</a>
                     </div>
                 </div>
             </div>
         {% endfor %}
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function updateCountdown(element) {
+        const endTimeStr = element.getAttribute('data-end-time');
+        const endTime = new Date(endTimeStr).getTime();
+        const now = new Date().getTime();
+        const timeRemaining = endTime - now;
+
+        if (timeRemaining < 0) {
+            element.innerText = 'Auction ended';
+            return;
+        }
+
+        const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+
+        element.innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    function updateAllCountdowns() {
+        const countdownElements = document.querySelectorAll('.time-remaining');
+        countdownElements.forEach(element => {
+            updateCountdown(element);
+        });
+    }
+
+    updateAllCountdowns();
+    setInterval(updateAllCountdowns, 1000);
+</script>
 {% endblock %}

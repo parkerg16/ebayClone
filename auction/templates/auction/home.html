@@ -4,28 +4,34 @@
 <div class="container">
     <div class="row">
         {% for category, items in category_items.items %}
-            <div class="col-12">
-                <h2>{{ category.name }}</h2>
-            </div>
-            {% for item in items %}
-                <div class="col-md-3 col-sm-6 mb-4">
-                    <div class="card">
-                        {% if item.image %}
-                            <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.title }}" style="height: 200px; object-fit: cover;">
-                        {% else %}
-                            <img src="https://via.placeholder.com/150" class="card-img-top img-fluid" alt="No image available" style="height: 200px; object-fit: cover;">
-                        {% endif %}
-                        <div class="card-body">
-                            <h5 class="card-title">{{ item.title }}</h5>
-                            <p class="card-text">Starting Bid: ${{ item.starting_price }}</p>
-                            <p class="card-text">Current Bid: ${{ item.highest_bid }}</p>
-<!--                            <p class="card-text">End Date: {{ item.end_time }}</p>-->
-                            <p class="card-text">Time Remaining: <span class="time-remaining" data-end-time="{{ item.end_time|date:'c' }}"></span></p>
-                            <a href="{% url 'item_detail' item.id %}" class="btn btn-primary">View Item</a>
-                        </div>
-                    </div>
+            <div class="col-12 mt-4">
+                <div class="d-flex align-items-center">
+                    <h2 class="mr-2">{{ category.name }}</h2>
+                    <a href="{% url 'item_list' category.id %}" class="btn btn-primary btn-sm">View All {{category.name}}</a>
                 </div>
-            {% endfor %}
+                <div class="row mt-2">
+                    {% for item in items %}
+                        <div class="col-md-3 col-sm-6 mb-4">
+                            <div class="card">
+                                {% if item.image %}
+                                <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.title }}"
+                                     style="height: 200px; object-fit: cover;">
+                                {% else %}
+                                    <img src="https://via.placeholder.com/150" class="card-img-top img-fluid" alt="No image available" style="height: 200px; object-fit: cover;">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ item.title }}</h5>
+                                    <p class="card-text">Starting Bid: ${{ item.starting_price }}</p>
+                                    <p class="card-text">Current Bid: ${{ item.highest_bid }}</p>
+                                    <p class="card-text">End Date: {{ item.end_time }}</p>
+                                    <p class="card-text">Time Remaining: <span class="time-remaining" data-end-time="{{ item.end_time|date:'c' }}"></span></p>
+                                    <a href="{% url 'item_detail' item.id %}" class="btn btn-primary">View Item</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
         {% endfor %}
     </div>
 </div>
@@ -53,15 +59,13 @@
     }
 
     function updateAllCountdowns() {
-        const elements = document.getElementsByClassName('time-remaining');
-        for (let i = 0; i < elements.length; i++) {
-            updateCountdown(elements[i]);
-        }
+        const countdownElements = document.querySelectorAll('.time-remaining');
+        countdownElements.forEach(element => {
+            updateCountdown(element);
+        });
     }
 
-    document.addEventListener("DOMContentLoaded", function() {
-        updateAllCountdowns();
-        setInterval(updateAllCountdowns, 1000);
-    });
+    updateAllCountdowns();
+    setInterval(updateAllCountdowns, 1000);
 </script>
 {% endblock %}
