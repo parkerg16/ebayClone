@@ -4,6 +4,17 @@
 
 {% block content %}
 <div class="container mt-4">
+    <!-- Display messages -->
+    {% if messages %}
+        <div class="alert alert-dismissible fade show" role="alert">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
     <div class="row">
         <div class="col-md-6">
             <div class="card">
@@ -52,7 +63,7 @@
                         {% if user == item.user %}
                             <a href="{% url 'delete_item' item.id %}" class="btn btn-danger">Delete</a>
                         {% else %}
-                            <form method="post" action="{% url 'place_bid' item.id %}">
+                            <form method="post">
                                 {% csrf_token %}
                                 <div class="form-group">
                                     <label for="id_amount">Bid Amount</label>

@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
-
+from django.contrib import messages
 from .forms import ItemForm, BidForm, RegistrationForm
 from .models import Item, Category
 from django.contrib.auth.forms import AuthenticationForm
@@ -13,12 +13,19 @@ def home(request):
     category_items = {}
     for category in categories:
         items = Item.objects.filter(category=category).order_by('-start_time')[:4]
+        for item in items:
+            highest_bid = item.bids.order_by('-amount').first()
+            starting_price = item.starting_price
+            end_date = item.end_time
+            item.highest_bid = highest_bid.amount if highest_bid else item.starting_price
         category_items[category] = items
     return render(request, 'auction/home.html', {'category_items': category_items})
+
 
 def custom_logout_view(request):
     logout(request)
     return redirect('home')
+
 
 def register(request):
     if request.method == 'POST':
@@ -30,6 +37,7 @@ def register(request):
     else:
         form = RegistrationForm()
     return render(request, 'auction/register.html', {'form': form})
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -63,6 +71,7 @@ def submit_item(request):
     else:
         form = ItemForm()
     return render(request, 'auction/submit_item.html', {'form': form})
+
 
 @login_required
 def delete_item(request, item_id):
@@ -118,21 +127,19 @@ def item_detail(request, item_id):
             bid.item = item
 
             if request.user == item.user:
-                form.add_error(None, 'You cannot bid on your own item.')
-
-            if highest_bid and bid.amount <= highest_bid.amount:
-                form.add_error('amount', 'Bid must be higher than the current highest bid.')
+                messages.error(request, 'You cannot bid on your own item.')
+            elif highest_bid and bid.amount <= highest_bid.amount:
+                messages.error(request, 'Bid must be higher than the current highest bid.')
             elif not highest_bid and bid.amount <= item.starting_price:
-                form.add_error('amount', 'Bid must be higher than the starting price.')
-
-            if not form.errors:
+                messages.error(request, 'Bid must be higher than the starting price.')
+            else:
                 bid.save()
+                messages.success(request, 'Your bid has been placed successfully.')
                 return redirect('item_detail', item_id=item.id)
     else:
         form = BidForm()
 
     return render(request, 'auction/item_detail.html', {'item': item, 'bids': bids, 'form': form, 'highest_bid': highest_bid})
-
 
 def item_list(request, category_id):
     category = get_object_or_404(Category, pk=category_id)
