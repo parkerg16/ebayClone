@@ -22,7 +22,11 @@ class ItemForm(forms.ModelForm):
             self.fields.pop('starting_price')
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
+
+
 class BidForm(forms.ModelForm):
+    amount = forms.IntegerField(min_value=1, label="Bid Amount")
+
     class Meta:
         model = Bid
         fields = ['amount']

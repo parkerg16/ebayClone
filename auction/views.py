@@ -141,6 +141,13 @@ def item_detail(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
     bids = item.bids.all()
     highest_bid = bids.order_by('-amount').first()
+    bid_delta = 5
+
+    # Determine the initial bid amount and ensure it is an integer
+    if highest_bid:
+        initial_bid_amount = int(highest_bid.amount + bid_delta)
+    else:
+        initial_bid_amount = int(item.starting_price + bid_delta)
 
     if request.method == 'POST':
         form = BidForm(request.POST)
@@ -160,11 +167,14 @@ def item_detail(request, item_id):
                 messages.success(request, 'Your bid has been placed successfully.')
                 return redirect('item_detail', item_id=item.id)
     else:
-        form = BidForm()
+        form = BidForm(initial={'amount': initial_bid_amount})
 
-    return render(request, 'auction/item_detail.html',
-                  {'item': item, 'bids': bids, 'form': form, 'highest_bid': highest_bid})
-
+    return render(request, 'auction/item_detail.html', {
+        'item': item,
+        'bids': bids,
+        'form': form,
+        'highest_bid': highest_bid
+    })
 
 def item_list(request, category_id):
     category = get_object_or_404(Category, pk=category_id)
