@@ -15,12 +15,9 @@ def home(request):
         items = Item.objects.filter(category=category).order_by('-start_time')[:4]
         for item in items:
             highest_bid = item.bids.order_by('-amount').first()
-            starting_price = item.starting_price
-            end_date = item.end_time
             item.highest_bid = highest_bid.amount if highest_bid else item.starting_price
         category_items[category] = items
     return render(request, 'auction/home.html', {'category_items': category_items})
-
 
 def custom_logout_view(request):
     logout(request)
@@ -140,7 +137,6 @@ def item_detail(request, item_id):
         form = BidForm()
 
     return render(request, 'auction/item_detail.html', {'item': item, 'bids': bids, 'form': form, 'highest_bid': highest_bid})
-
 def item_list(request, category_id):
     category = get_object_or_404(Category, pk=category_id)
     items = category.items.all()
