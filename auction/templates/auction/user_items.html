@@ -1,0 +1,26 @@
+{% extends 'auction/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>My Items</h2>
+    <div class="row">
+        {% for item in items %}
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="card">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.title }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <img src="https://via.placeholder.com/150" class="card-img-top img-fluid" alt="No image available" style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ item.title }}</h5>
+                        <p class="card-text">Starting Bid: ${{ item.starting_price }}</p>
+                        <p class="card-text">Current Bid: ${{ item.highest_bid }}</p>
+                        <a href="{% url 'edit_item' item.id %}" class="btn btn-primary">Edit Item</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

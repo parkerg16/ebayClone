@@ -19,6 +19,28 @@ def home(request):
         category_items[category] = items
     return render(request, 'auction/home.html', {'category_items': category_items})
 
+@login_required
+def user_items(request):
+    items = Item.objects.filter(user=request.user)
+    for item in items:
+        highest_bid = item.bids.order_by('-amount').first()
+        item.highest_bid = highest_bid.amount if highest_bid else None
+    return render(request, 'auction/user_items.html', {'items': items})
+@login_required
+def edit_item(request, item_id):
+    item = get_object_or_404(Item, id=item_id, user=request.user)
+
+    if request.method == 'POST':
+        form = ItemForm(request.POST, request.FILES, instance=item)
+        if form.is_valid():
+            form.save()
+            return redirect('user_items')
+    else:
+        form = ItemForm(instance=item)
+
+    return render(request, 'auction/edit_item.html', {'form': form, 'item': item})
+
+
 def custom_logout_view(request):
     logout(request)
     return redirect('home')
@@ -141,3 +163,4 @@ def item_list(request, category_id):
     category = get_object_or_404(Category, pk=category_id)
     items = category.items.all()
     return render(request, 'auction/item_list.html', {'category': category, 'items': items})
+
