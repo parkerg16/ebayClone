@@ -203,11 +203,6 @@ def report_items_on_sale(request):
     return render(request, 'auction/report_items_on_sale.html', {'items': items})
 
 
-def report_user_table(request):
-    users = User.objects.all()
-    return render(request, 'auction/report_user_table.html', {'users': users})
-
-
 def is_admin(user):
     return user.is_authenticated and user.is_staff
 
@@ -279,13 +274,13 @@ def download_items_bought_report(request):
     return response
 @user_passes_test(is_admin)
 def report_items_on_sale(request):
-    items = Item.objects.filter(end_time__gt=timezone.now(), sold=False).prefetch_related('bids')
+    items = Item.objects.filter(end_time__gt=timezone.now()).prefetch_related('bids')
     item_bids = []
     for item in items:
         highest_bid = item.bids.order_by('-amount').first()
         item_bids.append({
             'item': item,
-            'highest_bid': highest_bid.amount if highest_bid else 'No bids'
+            'highest_bid': highest_bid.amount if highest_bid else item.starting_price  # Show starting price if no bids
         })
     return render(request, 'auction/report_items_on_sale.html', {'item_bids': item_bids})
 
