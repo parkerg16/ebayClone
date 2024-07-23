@@ -1,17 +1,14 @@
 {% extends 'auction/base.html' %}
-
 {% block title %}Items Bought Report{% endblock %}
-
 {% block content %}
 <style>
-  .container a {
-    color: #17a2b8 !important;
-    transition: color 0.3s ease;
-  }
-
-  .container a:hover {
-    color: #e83e8c !important;
-  }
+    .container a {
+        color: #17a2b8 !important;
+        transition: color 0.3s ease;
+    }
+    .container a:hover {
+        color: #e83e8c !important;
+    }
 </style>
 <div class="container mt-4">
     <h1 class="mb-4">Items Bought Report</h1>
@@ -26,12 +23,12 @@
                 <select id="category" name="category" class="form-control">
                     <option value="">All Categories</option>
                     {% for category in categories %}
-                        <option value="{{ category.id }}" {% if category.id == selected_category_id %}selected{% endif %}>{{ category.name }}</option>
+                    <option value="{{ category.id }}" {% if category.id == selected_category_id %}selected{% endif %}>{{ category.name }}</option>
                     {% endfor %}
                 </select>
             </div>
         </div>
-        <button type="button" class="btn btn-info" onclick="window.location.href='{% url 'download_items_bought_report' %}?date={{ selected_date }}&category={{ selected_category_id }}'">Download PDF</button>
+        <button type="button" class="btn btn-info" onclick="downloadPDF()">Download PDF</button>
     </form>
     <table class="table table-bordered">
         <thead>
@@ -46,19 +43,18 @@
         </thead>
         <tbody>
             {% for item in items %}
-                <tr>
-                    <td><a href="{% url 'item_detail' item.id %}" class="text-primary">{{ item.title }}</a></td>
-                    <td><a href="{% url 'item_list' item.category.id %}" class="text-primary">{{ item.category.name }}</a></td>
-                    <td>${{ item.sold_price }}</td>
-                    <td>{{ item.buyer.get_full_name }}</td>
-                    <td>{{ item.user.get_full_name }}</td>
-                    <td>{{ item.end_time|date:'F j, Y g:i A' }}</td>
-                </tr>
+            <tr>
+                <td><a href="{% url 'item_detail' item.id %}" class="text-primary">{{ item.title }}</a></td>
+                <td><a href="{% url 'item_list' item.category.id %}" class="text-primary">{{ item.category.name }}</a></td>
+                <td>${{ item.sold_price }}</td>
+                <td>{{ item.buyer.get_full_name }}</td>
+                <td>{{ item.user.get_full_name }}</td>
+                <td>{{ item.end_time|date:'F j, Y g:i A' }}</td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const dateInput = document.getElementById('date');
@@ -73,5 +69,12 @@
             form.submit();
         });
     });
+
+    function downloadPDF() {
+        const date = document.getElementById('date').value;
+        const category = document.getElementById('category').value;
+        const url = `{% url 'download_items_bought_report' %}?date=${encodeURIComponent(date)}&category=${encodeURIComponent(category)}`;
+        window.location.href = url;
+    }
 </script>
 {% endblock %}

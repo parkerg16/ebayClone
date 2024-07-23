@@ -1,10 +1,9 @@
 {% extends 'auction/base.html' %}
-
 {% block title %}User Table Report{% endblock %}
-
 {% block content %}
 <div class="container mt-4">
     <h1 class="mb-4">User Table Report</h1>
+    <button type="button" class="btn btn-info mb-3" onclick="window.location.href='{% url 'download_user_table_report' %}'">Download PDF</button>
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -16,12 +15,12 @@
         </thead>
         <tbody>
             {% for user in users %}
-                <tr>
-                    <td>{{ user.username }}</td>
-                    <td>{{ user.get_full_name }}</td>
-                    <td>{{ user.email }}</td>
-                    <td>{{ user.shipping_address }}</td>
-                </tr>
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.get_full_name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.shipping_address }}</td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>

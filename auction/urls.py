@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from .views import home, register, login_view, item_list, item_detail, submit_item, place_bid, custom_logout_view, \
     delete_item, user_items, edit_item, report_items_bought, report_items_on_sale, report_user_table, \
-    download_items_bought_report, download_items_on_sale_report
+    download_items_bought_report, download_items_on_sale_report, download_user_table_report
 
 admin.site.site_header = "eBay"
 admin.site.site_title = "eBay"
@@ -26,4 +26,5 @@ urlpatterns = [
     path('report_user_table/', report_user_table, name='report_user_table'),
     path('download_items_bought_report/', download_items_bought_report, name='download_items_bought_report'),
     path('download_items_on_sale_report/', download_items_on_sale_report, name='download_items_on_sale_report'),
+path('report/user-table/download/', download_user_table_report, name='download_user_table_report'),
 ]

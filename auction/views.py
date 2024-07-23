@@ -1,8 +1,7 @@
 from io import BytesIO
 
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models.functions import datetime as dj_datetime
-from django.http import HttpResponseForbidden, HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
@@ -18,6 +17,9 @@ from .forms import ItemForm, BidForm, RegistrationForm
 from .models import Item, Category, User
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, login, logout
+
+def is_admin(user):
+    return user.is_authenticated and user.is_staff
 
 def home(request):
     categories = Category.objects.all()
@@ -132,12 +134,13 @@ def place_bid(request, item_id):
             bid.item = item
 
             highest_bid = item.bids.order_by('-amount').first()
-            if highest_bid and bid.amount <= highest_bid.amount:
-                form.add_error('amount', 'Bid must be higher than the current highest bid.')
+            if highest_bid and bid.user == highest_bid.user:
+                messages.error(request, 'You cannot outbid yourself.')
+            elif highest_bid and bid.amount <= highest_bid.amount:
+                messages.error(request, 'Bid must be higher than the current highest bid.')
             elif not highest_bid and bid.amount <= item.starting_price:
-                form.add_error('amount', 'Bid must be higher than the starting price.')
-
-            if not form.errors:
+                messages.error(request, 'Bid must be higher than the starting price.')
+            else:
                 bid.save()
                 return redirect('item_detail', item_id=item.id)
     else:
@@ -197,11 +200,6 @@ def item_list(request, category_id):
 
     return render(request, 'auction/item_list.html', {'category': category, 'items_with_bids': items_with_bids})
 
-
-def is_admin(user):
-    return user.is_authenticated and user.is_staff
-
-
 @user_passes_test(is_admin)
 def report_items_on_sale(request):
     categories = Category.objects.all()
@@ -210,6 +208,7 @@ def report_items_on_sale(request):
     items = Item.objects.filter(end_time__gt=timezone.now()).prefetch_related('bids')
     if selected_category_id:
         items = items.filter(category_id=int(selected_category_id))
+
     item_bids = []
     for item in items:
         highest_bid = item.bids.order_by('-amount').first()
@@ -217,20 +216,12 @@ def report_items_on_sale(request):
             'item': item,
             'highest_bid': highest_bid.amount if highest_bid else 'No bids'
         })
+
     return render(request, 'auction/report_items_on_sale.html', {
         'item_bids': item_bids,
         'categories': categories,
         'selected_category_id': int(selected_category_id) if selected_category_id else None,
     })
-from django.contrib.auth.decorators import user_passes_test, login_required
-from django.http import HttpResponse
-from django.utils import timezone
-from io import BytesIO
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from .models import Item, Category
 
 
 @user_passes_test(is_admin)
@@ -238,7 +229,6 @@ def download_items_on_sale_report(request):
     selected_category_id = request.GET.get('category')
 
     items = Item.objects.filter(end_time__gt=timezone.now()).prefetch_related('bids')
-
     if selected_category_id and selected_category_id != 'None':
         items = items.filter(category_id=int(selected_category_id))
 
@@ -261,7 +251,7 @@ def download_items_on_sale_report(request):
             item.category.name,
             f"${item.starting_price}",
             f"${highest_bid.amount}" if highest_bid else "No bids",
-            item.end_time.strftime('%B %d, %Y %I:%M %p')
+            item.end_time.strftime('%Y-%m-%d %H:%M:%S')
         ])
 
     table = Table(table_data)
@@ -269,7 +259,9 @@ def download_items_on_sale_report(request):
         ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (0, 0), (-
+
+1, 0), 'Helvetica-Bold'),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
         ('BACKGROUND', (0, 1), (-1, -1), colors.aliceblue),
         ('GRID', (0, 0), (-1, -1), 1, colors.black)
@@ -283,7 +275,6 @@ def download_items_on_sale_report(request):
     response.write(pdf)
 
     return response
-
 
 @login_required
 @user_passes_test(is_admin)
@@ -326,24 +317,26 @@ def download_items_bought_report(request):
             selected_date = None
 
     if selected_category_id and selected_category_id != 'None':
-        items = items.filter(category_id=selected_category_id)
+        items = items.filter(category_id=int(selected_category_id))
 
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="items_bought_report.pdf"'
 
     buffer = BytesIO()
-
     doc = SimpleDocTemplate(buffer, pagesize=letter)
     elements = []
-
     styles = getSampleStyleSheet()
+
     title = "Items Bought Report"
     if selected_date:
         title += f" for {selected_date.strftime('%B %d, %Y')}"
+    if selected_category_id and selected_category_id != 'None':
+        category_name = Category.objects.get(id=int(selected_category_id)).name
+        title += f" in {category_name} Category"
+
     elements.append(Paragraph(title, styles['Title']))
 
     data = [['Title', 'Category', 'Sold Price', 'Buyer', 'Seller', 'End Time']]
-
     for item in items:
         end_time_formatted = item.end_time.strftime('%B %d, %Y %I:%M %p')
         data.append([
@@ -374,9 +367,59 @@ def download_items_bought_report(request):
     response.write(buffer.getvalue())
     buffer.close()
     return response
-
-
 @user_passes_test(is_admin)
 def report_user_table(request):
     users = User.objects.all()
     return render(request, 'auction/report_user_table.html', {'users': users})
+from io import BytesIO
+from django.http import HttpResponse
+from django.contrib.auth.decorators import user_passes_test
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+from .models import User
+
+@user_passes_test(is_admin)
+def download_user_table_report(request):
+    users = User.objects.all()
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="user_table_report.pdf"'
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    elements = []
+
+    styles = getSampleStyleSheet()
+    elements.append(Paragraph("User Table Report", styles['Title']))
+
+    data = [['Username', 'Real Name', 'Email', 'Shipping Address']]
+    for user in users:
+        data.append([
+            user.username,
+            user.get_full_name(),
+            user.email,
+            user.shipping_address
+        ])
+
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 14),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.aliceblue),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+
+    elements.append(table)
+    doc.build(elements)
+
+    pdf = buffer.getvalue()
+    buffer.close()
+    response.write(pdf)
+
+    return response
