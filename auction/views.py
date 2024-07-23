@@ -280,10 +280,9 @@ def report_items_on_sale(request):
         highest_bid = item.bids.order_by('-amount').first()
         item_bids.append({
             'item': item,
-            'highest_bid': highest_bid.amount if highest_bid else item.starting_price  # Show starting price if no bids
+            'highest_bid': highest_bid.amount if highest_bid else 'No bids'
         })
     return render(request, 'auction/report_items_on_sale.html', {'item_bids': item_bids})
-
 @user_passes_test(is_admin)
 def download_items_on_sale_report(request):
     items = Item.objects.filter(end_time__gt=timezone.now()).prefetch_related('bids')
