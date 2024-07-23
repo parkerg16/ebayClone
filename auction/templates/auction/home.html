@@ -3,35 +3,43 @@
 {% block content %}
 <div class="container">
     <div class="row">
-        {% for category, items in category_items.items %}
-            <div class="col-12 mt-4">
-                <div class="d-flex align-items-center">
-                    <h2 class="mr-2">{{ category.name }}</h2>
-                    <a href="{% url 'item_list' category.id %}" class="btn btn-primary btn-sm">View All {{category.name}}</a>
-                </div>
-                <div class="row mt-2">
-                    {% for item in items %}
-                        <div class="col-md-3 col-sm-6 mb-4">
-                            <div class="card">
-                                {% if item.image %}
-                                <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.title }}"
-                                     style="height: 200px; object-fit: cover;">
-                                {% else %}
-                                    <img src="https://via.placeholder.com/150" class="card-img-top img-fluid" alt="No image available" style="height: 200px; object-fit: cover;">
-                                {% endif %}
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ item.title }}</h5>
-                                    <p class="card-text">Starting Bid: ${{ item.starting_price }}</p>
-                                    <p class="card-text">Current Bid: ${{ item.highest_bid }}</p>
-                                    <p class="card-text">End Date: {{ item.end_time }}</p>
-                                    <p class="card-text">Time Remaining: <span class="time-remaining" data-end-time="{{ item.end_time|date:'c' }}"></span></p>
-                                    <a href="{% url 'item_detail' item.id %}" class="btn btn-primary">View Item</a>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
+        <div class="col-12">
+            <h1>Home</h1>
+            <button id="toggle-ended" class="btn btn-secondary mb-4">Hide Ended Listings</button>
+            <div class="mb-4">
+                <label for="price-range">Filter by Price:</label>
+                <div id="price-range"></div>
+                <div class="d-flex justify-content-between mt-2">
+                    <span id="price-min"></span>
+                    <span id="price-max"></span>
                 </div>
             </div>
+        </div>
+    </div>
+    <div class="row">
+        {% for category, items in category_items.items %}
+            <div class="col-12 d-flex justify-content-between align-items-center">
+                <h2>{{ category.name }}</h2>
+                <a href="{% url 'item_list' category.id %}" class="btn btn-info">View All</a>
+            </div>
+            {% for item in items %}
+                <div class="col-md-3 col-sm-6 mb-4 item-card" data-end-time="{{ item.end_time|date:'c' }}" data-price="{{ item.highest_bid }}">
+                    <div class="card">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.title }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <img src="https://via.placeholder.com/150" class="card-img-top img-fluid" alt="No image available" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ item.title }}</h5>
+                            <p class="card-text">Starting Bid: ${{ item.starting_price }}</p>
+                            <p class="card-text">Current Bid: ${{ item.highest_bid }}</p>
+                            <p class="card-text">End Date: {{ item.end_time }}</p>
+                            <a href="{% url 'item_detail' item.id %}" class="btn btn-primary">View Item</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
         {% endfor %}
     </div>
 </div>
@@ -39,33 +47,61 @@
 
 {% block scripts %}
 <script>
-    function updateCountdown(element) {
-        const endTimeStr = element.getAttribute('data-end-time');
-        const endTime = new Date(endTimeStr).getTime();
-        const now = new Date().getTime();
-        const timeRemaining = endTime - now;
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleButton = document.getElementById('toggle-ended');
+        let showEnded = true;
 
-        if (timeRemaining < 0) {
-            element.innerText = 'Auction ended';
-            return;
+        toggleButton.addEventListener('click', function() {
+            showEnded = !showEnded;
+            if (showEnded) {
+                toggleButton.textContent = 'Hide Ended Listings';
+            } else {
+                toggleButton.textContent = 'Show Ended Listings';
+            }
+            filterItems();
+        });
+
+        function filterItems() {
+            const items = document.querySelectorAll('.item-card');
+            const now = new Date();
+            const minPrice = parseFloat(priceRange.noUiSlider.get()[0]);
+            const maxPrice = parseFloat(priceRange.noUiSlider.get()[1]);
+            items.forEach(item => {
+                const endTime = new Date(item.getAttribute('data-end-time'));
+                const price = parseFloat(item.getAttribute('data-price'));
+                const isWithinPriceRange = price >= minPrice && price <= maxPrice;
+                if ((endTime <= now && !showEnded) || !isWithinPriceRange) {
+                    item.style.display = 'none';
+                } else {
+                    item.style.display = 'block';
+                }
+            });
         }
 
-        const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+        const priceRange = document.getElementById('price-range');
+        const priceMin = document.getElementById('price-min');
+        const priceMax = document.getElementById('price-max');
 
-        element.innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-    }
-
-    function updateAllCountdowns() {
-        const countdownElements = document.querySelectorAll('.time-remaining');
-        countdownElements.forEach(element => {
-            updateCountdown(element);
+        noUiSlider.create(priceRange, {
+            start: [0, 1000],  // Set initial range
+            connect: true,
+            range: {
+                'min': 0,
+                'max': 1000
+            },
+            format: {
+                to: value => value.toFixed(2),
+                from: value => parseFloat(value)
+            }
         });
-    }
 
-    updateAllCountdowns();
-    setInterval(updateAllCountdowns, 1000);
+        priceRange.noUiSlider.on('update', function(values, handle) {
+            priceMin.textContent = '$' + values[0];
+            priceMax.textContent = '$' + values[1];
+            filterItems();
+        });
+
+        filterItems();  // Initial call to filter items on page load
+    });
 </script>
 {% endblock %}

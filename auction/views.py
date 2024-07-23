@@ -29,7 +29,7 @@ def home(request):
             highest_bid = item.bids.order_by('-amount').first()
             item.highest_bid = highest_bid.amount if highest_bid else item.starting_price
         category_items[category] = items
-    return render(request, 'auction/home.html', {'category_items': category_items})
+    return render(request, 'auction/home.html', {'category_items': category_items, 'timezone_now': timezone.now()})
 
 
 @login_required
