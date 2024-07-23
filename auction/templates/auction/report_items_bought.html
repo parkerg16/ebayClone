@@ -10,7 +10,7 @@
             <label for="date">Select Date:</label>
             <input type="date" id="date" name="date" class="form-control" value="{{ selected_date|date:'Y-m-d' }}">
         </div>
-        <button type="submit" class="btn btn-primary">Generate Report</button>
+        <button type="submit" class="btn btn-info">Generate Report</button>
         <a href="{% url 'download_items_bought_report' %}?date={{ selected_date|date:'Y-m-d' }}" class="btn btn-secondary ml-2">Download PDF</a>
     </form>
     <table class="table table-bordered">

@@ -34,8 +34,8 @@
                             <h5 class="card-title">{{ item.title }}</h5>
                             <p class="card-text">Starting Bid: ${{ item.starting_price }}</p>
                             <p class="card-text">Current Bid: ${{ item.highest_bid }}</p>
-                            <p class="card-text">End Date: {{ item.end_time }}</p>
-                            <a href="{% url 'item_detail' item.id %}" class="btn btn-primary">View Item</a>
+                            <p class="card-text">Time Remaining: <span class="time-remaining" data-end-time="{{ item.end_time|date:'c' }}"></span></p>
+                            <a href="{% url 'item_detail' item.id %}" class="btn btn-info">View Item</a>
                         </div>
                     </div>
                 </div>
@@ -53,11 +53,7 @@
 
         toggleButton.addEventListener('click', function() {
             showEnded = !showEnded;
-            if (showEnded) {
-                toggleButton.textContent = 'Hide Ended Listings';
-            } else {
-                toggleButton.textContent = 'Show Ended Listings';
-            }
+            toggleButton.textContent = showEnded ? 'Hide Ended Listings' : 'Show Ended Listings';
             filterItems();
         });
 
@@ -102,6 +98,35 @@
         });
 
         filterItems();  // Initial call to filter items on page load
+
+        function updateCountdown(element) {
+            const endTimeStr = element.getAttribute('data-end-time');
+            const endTime = new Date(endTimeStr).getTime();
+            const now = new Date().getTime();
+            const timeRemaining = endTime - now;
+
+            if (timeRemaining < 0) {
+                element.innerText = 'Auction ended';
+                return;
+            }
+
+            const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+
+            element.innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        }
+
+        function updateAllCountdowns() {
+            const countdownElements = document.querySelectorAll('.time-remaining');
+            countdownElements.forEach(element => {
+                updateCountdown(element);
+            });
+        }
+
+        updateAllCountdowns();
+        setInterval(updateAllCountdowns, 1000);
     });
 </script>
 {% endblock %}

@@ -20,7 +20,7 @@
                         <p class="card-text">Current Bid: ${{ item_with_bid.highest_bid }}</p>
                         <p class="card-text">End Date: {{ item_with_bid.item.end_time }}</p>
                         <p class="card-text">Time Remaining: <span class="time-remaining" data-end-time="{{ item_with_bid.item.end_time|date:'c' }}"></span></p>
-                        <a href="{% url 'item_detail' item_with_bid.item.id %}" class="btn btn-primary">View Details</a>
+                        <a href="{% url 'item_detail' item_with_bid.item.id %}" class="btn btn-info">View Details</a>
                     </div>
                 </div>
             </div>
