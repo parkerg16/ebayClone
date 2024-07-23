@@ -6,26 +6,24 @@
 <div class="container mt-4">
     <!-- Display messages -->
     {% if messages %}
-    <div class="alert alert-dismissible fade show" role="alert">
-        {% for message in messages %}
-        {% if message.tags == 'error' %}
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="alert alert-dismissible fade show" role="alert">
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endif %}
+            {% endfor %}
         </div>
-        {% endif %}
-        {% endfor %}
-    </div>
     {% endif %}
     <div class="row">
         <div class="col-md-6">
             <div class="card">
                 {% if item.image %}
-                <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.title }}"
-                     style="height: 400px; object-fit: cover;">
+                    <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.title }}" style="height: 400px; object-fit: cover;">
                 {% else %}
-                <img src="https://via.placeholder.com/400" class="card-img-top img-fluid" alt="No image available"
-                     style="height: 400px; object-fit: cover;">
+                    <img src="https://via.placeholder.com/400" class="card-img-top img-fluid" alt="No image available" style="height: 400px; object-fit: cover;">
                 {% endif %}
                 <div class="card-body">
                     <h2 class="card-title">{{ item.title }}</h2>
@@ -46,64 +44,67 @@
                 </div>
                 <div class="card-body">
                     {% if bids %}
-                    <ul class="list-group">
-                        {% for bid in bids %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>{{ bid.user.username }}: ${{ bid.amount }}</span>
-                            {% if bid == highest_bid %}
-                            <span class="badge badge-success badge-pill">Highest Bid: {{ bid.bid_time }}</span>
-                            {% else %}
-                            <span class="badge badge-danger badge-pill">{{ bid.bid_time }}</span>
-                            {% endif %}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    {% else %}
-                    <p>No bids yet. Be the first to place a bid!</p>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h3>Place a Bid</h3>
-                </div>
-                <div class="card-body">
-                    {% if user.is_authenticated %}
-                    {% if user == item.user %}
-                    {% if not bids %}
-                    <a href="{% url 'delete_item' item.id %}" class="btn btn-danger">Delete</a>
-                    {% else %}
-                    <p>You cannot delete this item because there are bids placed on it.</p>
-                    {% endif %}
-                    {% else %}
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="id_amount">Bid Amount</label>
-                            {{ form.amount }}
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-block">Place Bid</button>
-                        <!-- Display error message here -->
-                        {% if messages %}
-                        <div class="alert alert-dismissible fade show" role="alert">
-                            {% for message in messages %}
-                            {% if message.tags == 'error' %}
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                        aria-label="Close"></button>
-                            </div>
-                            {% endif %}
+                        <ul class="list-group">
+                            {% for bid in bids %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>{{ bid.user.username }}: ${{ bid.amount }}</span>
+                                    {% if bid == highest_bid %}
+                                        <span class="badge badge-success badge-pill">Highest Bid: {{ bid.bid_time }}</span>
+                                    {% else %}
+                                        <span class="badge badge-danger badge-pill">{{ bid.bid_time }}</span>
+                                    {% endif %}
+                                </li>
                             {% endfor %}
-                        </div>
-                        {% endif %}
-                    </form>
-                    {% endif %}
+                        </ul>
                     {% else %}
-                    <p>You must <a href="{% url 'login' %}">login</a> to place a bid or delete an item.</p>
+                        <p>No bids yet. Be the first to place a bid!</p>
                     {% endif %}
                 </div>
             </div>
+            {% if item_ended %}
+                <div class="alert alert-warning mt-4">
+                    This auction has ended. No more bids can be placed.
+                </div>
+            {% else %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h3>Place a Bid</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if user.is_authenticated %}
+                            {% if user == item.user %}
+                                {% if not item_ended %}
+                                    <a href="{% url 'delete_item' item.id %}" class="btn btn-danger">Delete</a>
+                                {% endif %}
+                            {% else %}
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <label for="id_amount">Bid Amount</label>
+                                        {{ form.amount }}
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-block">Place Bid</button>
+                                    <!-- Display error message here -->
+                                    {% if messages %}
+                                        <div class="alert alert-dismissible fade show" role="alert">
+                                            {% for message in messages %}
+                                                {% if message.tags == 'error' %}
+                                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                                        {{ message }}
+                                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </form>
+                            {% endif %}
+                        {% else %}
+                            <p>You must <a href="{% url 'login' %}">login</a> to place a bid or delete an item.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
     <a href="{% url 'item_list' item.category.id %}" class="btn btn-secondary mt-4">Back to Category</a>

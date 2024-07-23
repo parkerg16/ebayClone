@@ -147,19 +147,16 @@ def place_bid(request, item_id):
     return render(request, 'auction/place_bid.html', {'form': form, 'item': item})
 
 
+@login_required
 def item_detail(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
     bids = item.bids.all()
     highest_bid = bids.order_by('-amount').first()
-    bid_delta = 5
 
-    # Determine the initial bid amount and ensure it is an integer
-    if highest_bid:
-        initial_bid_amount = int(highest_bid.amount + bid_delta)
-    else:
-        initial_bid_amount = int(item.starting_price + bid_delta)
+    # Check if the item has ended
+    item_ended = item.end_time <= timezone.now()
 
-    if request.method == 'POST':
+    if request.method == 'POST' and not item_ended:
         form = BidForm(request.POST)
         if form.is_valid():
             bid = form.save(commit=False)
@@ -177,15 +174,15 @@ def item_detail(request, item_id):
                 messages.success(request, 'Your bid has been placed successfully.')
                 return redirect('item_detail', item_id=item.id)
     else:
-        form = BidForm(initial={'amount': initial_bid_amount})
+        form = BidForm()
 
     return render(request, 'auction/item_detail.html', {
         'item': item,
         'bids': bids,
         'form': form,
-        'highest_bid': highest_bid
+        'highest_bid': highest_bid,
+        'item_ended': item_ended,
     })
-
 
 def item_list(request, category_id):
     category = get_object_or_404(Category, pk=category_id)
