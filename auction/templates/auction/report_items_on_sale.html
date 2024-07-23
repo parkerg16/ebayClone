@@ -1,14 +1,13 @@
-<!-- In report_items_on_sale.html -->
-
 {% extends 'auction/base.html' %}
-
 {% block title %}Items On Sale Report{% endblock %}
-
 {% block content %}
-
 <style>
-    a {
-        color: #17a2b8; /* Bootstrap 'info' color */
+    .container .table a {
+        color: #17a2b8 !important;
+        transition: color 0.3s ease;
+    }
+    .container .table a:hover {
+        color: #e83e8c !important;
     }
 </style>
 <div class="container mt-4">
@@ -26,13 +25,13 @@
         </thead>
         <tbody>
             {% for item in item_bids %}
-                <tr>
-                    <td><a href="{% url 'item_detail' item.item.id %}">{{ item.item.title }}</a></td>
-                    <td><a href="{% url 'item_list' item.item.category.id %}">{{ item.item.category.name }}</a></td>
-                    <td>${{ item.item.starting_price }}</td>
-                    <td>${{ item.highest_bid }}</td>
-                    <td>{{ item.item.end_time }}</td>
-                </tr>
+            <tr>
+                <td><a href="{% url 'item_detail' item.item.id %}">{{ item.item.title }}</a></td>
+                <td><a href="{% url 'item_list' item.item.category.id %}">{{ item.item.category.name }}</a></td>
+                <td>${{ item.item.starting_price }}</td>
+                <td>${{ item.highest_bid }}</td>
+                <td>{{ item.item.end_time }}</td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>

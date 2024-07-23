@@ -4,9 +4,14 @@
 
 {% block content %}
 <style>
-    a {
-        color: #17a2b8; /* Bootstrap 'info' color */
-    }
+  .container a {
+    color: #17a2b8 !important;
+    transition: color 0.3s ease;
+  }
+
+  .container a:hover {
+    color: #e83e8c !important;
+  }
 </style>
 <div class="container mt-4">
     <h1 class="mb-4">Items Bought Report</h1>
