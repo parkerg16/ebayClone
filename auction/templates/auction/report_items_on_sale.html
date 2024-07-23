@@ -5,6 +5,12 @@
 {% block title %}Items On Sale Report{% endblock %}
 
 {% block content %}
+
+<style>
+    a {
+        color: #17a2b8; /* Bootstrap 'info' color */
+    }
+</style>
 <div class="container mt-4">
     <h1 class="mb-4">Items On Sale Report</h1>
     <a href="{% url 'download_items_on_sale_report' %}" class="btn btn-info mb-4">Download PDF</a>
