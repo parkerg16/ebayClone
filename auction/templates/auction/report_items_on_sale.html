@@ -25,7 +25,7 @@
                 {% endfor %}
             </select>
         </div>
-        <button type="button" class="btn btn-info mb-4" onclick="window.location.href='{% url 'download_items_on_sale_report' %}?category={{ selected_category_id }}'">Download Report</button>
+        <button type="button" class="btn btn-info mb-4" onclick="window.location.href='{% url 'download_items_on_sale_report' %}?category={{ selected_category_id }}'">Download PDF</button>
     </form>
     <table class="table table-bordered">
         <thead>
