@@ -15,6 +15,8 @@ class ItemForm(forms.ModelForm):
         model = Item
         fields = ['title', 'description', 'category', 'condition', 'starting_price', 'image']
 
+    image = forms.ImageField(required=True)
+
     def __init__(self, *args, **kwargs):
         super(ItemForm, self).__init__(*args, **kwargs)
         item = kwargs.get('instance')

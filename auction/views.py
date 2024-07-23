@@ -56,7 +56,6 @@ def edit_item(request, item_id):
 
     return render(request, 'auction/edit_item.html', {'form': form, 'item': item, 'has_bids': has_bids})
 
-
 def custom_logout_view(request):
     logout(request)
     return redirect('home')
