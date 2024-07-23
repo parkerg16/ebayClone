@@ -106,8 +106,6 @@ def submit_item(request):
     else:
         form = ItemForm()
     return render(request, 'auction/submit_item.html', {'form': form})
-
-
 @login_required
 def delete_item(request, item_id):
     item = get_object_or_404(Item, pk=item_id)

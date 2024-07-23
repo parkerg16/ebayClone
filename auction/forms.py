@@ -13,7 +13,7 @@ class RegistrationForm(UserCreationForm):
 class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
-        fields = ['title', 'description', 'category', 'starting_price', 'image']
+        fields = ['title', 'description', 'category', 'condition', 'starting_price', 'image']
 
     def __init__(self, *args, **kwargs):
         super(ItemForm, self).__init__(*args, **kwargs)
