@@ -3,11 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from datetime import timedelta
 
-
 class User(AbstractUser):
-    email_address = models.EmailField(max_length=255, unique=True)
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
     shipping_address = models.TextField()
     credit_card_info = models.CharField(max_length=255, blank=True, null=True)
 
@@ -47,6 +43,7 @@ class ItemCondition(models.Model):
     def __str__(self):
         return self.title
 
+
 class Item(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
@@ -57,17 +54,28 @@ class Item(models.Model):
     starting_price = models.DecimalField(max_digits=10, decimal_places=2)
     start_time = models.DateTimeField(default=timezone.now, editable=False)
     end_time = models.DateTimeField()
+    sold_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    buyer = models.ForeignKey(User, related_name='purchased_items', null=True, blank=True, on_delete=models.SET_NULL)
+    sold = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
-        if not self.id:
+        if not self.id and not self.start_time:
             self.start_time = timezone.now()
-            self.end_time = self.start_time + timedelta(days=7)  # Auctions will last 7 days
+        if not self.id and not self.end_time:
+            self.end_time = self.start_time + timedelta(days=7)
+
+        # Mark as sold if the auction has ended and the item is not already marked as sold
+        if self.end_time <= timezone.now() and not self.sold:
+            self.sold = True
+            highest_bid = self.bids.order_by('-amount').first()
+            if highest_bid:
+                self.sold_price = highest_bid.amount
+                self.buyer = highest_bid.user
+
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
-
-
 class Bid(models.Model):
     item = models.ForeignKey(Item, related_name='bids', on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name='bids', on_delete=models.CASCADE)

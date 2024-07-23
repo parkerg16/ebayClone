@@ -6,7 +6,7 @@ from .models import User, Item, Category, Bid
 class RegistrationForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email_address', 'password1', 'password2', 'shipping_address',
+        fields = ['username', 'first_name', 'last_name', 'password1', 'password2', 'shipping_address',
                   'credit_card_info']
 
 

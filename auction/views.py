@@ -1,9 +1,21 @@
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
+from io import BytesIO
+
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models.functions import datetime
+from django.http import HttpResponseForbidden, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.pdfgen import canvas
 from django.contrib import messages
+from django.utils import timezone
+from datetime import datetime
+
+from reportlab.platypus import TableStyle, SimpleDocTemplate, Paragraph, Spacer, Table
+
 from .forms import ItemForm, BidForm, RegistrationForm
-from .models import Item, Category
+from .models import Item, Category, User
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, login, logout
 
@@ -176,6 +188,7 @@ def item_detail(request, item_id):
         'highest_bid': highest_bid
     })
 
+
 def item_list(request, category_id):
     category = get_object_or_404(Category, pk=category_id)
     items = Item.objects.filter(category=category)
@@ -189,3 +202,144 @@ def item_list(request, category_id):
         })
 
     return render(request, 'auction/item_list.html', {'category': category, 'items_with_bids': items_with_bids})
+
+
+def report_items_on_sale(request):
+    items = Item.objects.filter(end_time__gt=timezone.now())
+    return render(request, 'auction/report_items_on_sale.html', {'items': items})
+
+
+def report_user_table(request):
+    users = User.objects.all()
+    return render(request, 'auction/report_user_table.html', {'users': users})
+
+
+def is_admin(user):
+    return user.is_authenticated and user.is_staff
+
+
+@user_passes_test(is_admin)
+def report_items_bought(request):
+    selected_date = request.GET.get('date')
+    if selected_date:
+        selected_date = timezone.make_aware(datetime.strptime(selected_date, '%Y-%m-%d'))
+
+    items = Item.objects.filter(sold=True)
+    if selected_date:
+        items = items.filter(end_time__date=selected_date.date())
+
+    # Filter out items without a buyer (i.e., without bids)
+    items = items.exclude(buyer__isnull=True)
+
+    return render(request, 'auction/report_items_bought.html', {'items': items, 'selected_date': selected_date})
+
+
+@user_passes_test(is_admin)
+def download_items_bought_report(request):
+    selected_date = request.GET.get('date')
+    if selected_date:
+        selected_date = timezone.make_aware(datetime.strptime(selected_date, '%Y-%m-%d'))
+
+    items = Item.objects.filter(sold=True)
+    if selected_date:
+        items = items.filter(end_time__date=selected_date.date())
+
+    items = items.exclude(buyer__isnull=True)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="items_bought_report.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    styles = getSampleStyleSheet()
+
+    elements = []
+
+    title = Paragraph("Items Bought Report", styles['Title'])
+    elements.append(title)
+    elements.append(Spacer(1, 12))
+
+    table_data = [["Title", "Category", "Sold Price", "Buyer", "End Time"]]
+
+    for item in items:
+        table_data.append([
+            item.title,
+            item.category.name,
+            f"${item.sold_price}",
+            item.buyer.get_full_name(),
+            item.end_time.strftime("%Y-%m-%d %H:%M:%S")
+        ])
+
+    table = Table(table_data, colWidths=[100, 100, 80, 100, 140])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+    elements.append(table)
+
+    doc.build(elements)
+    return response
+@user_passes_test(is_admin)
+def report_items_on_sale(request):
+    items = Item.objects.filter(end_time__gt=timezone.now(), sold=False).prefetch_related('bids')
+    item_bids = []
+    for item in items:
+        highest_bid = item.bids.order_by('-amount').first()
+        item_bids.append({
+            'item': item,
+            'highest_bid': highest_bid.amount if highest_bid else 'No bids'
+        })
+    return render(request, 'auction/report_items_on_sale.html', {'item_bids': item_bids})
+
+@user_passes_test(is_admin)
+def download_items_on_sale_report(request):
+    items = Item.objects.filter(end_time__gt=timezone.now()).prefetch_related('bids')
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="items_on_sale_report.pdf"'
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    styles = getSampleStyleSheet()
+
+    content = []
+    content.append(Paragraph("Items On Sale Report", styles['Title']))
+    content.append(Spacer(1, 12))
+
+    table_data = [['Title', 'Category', 'Starting Price', 'Current Bid', 'End Time']]
+    for item in items:
+        highest_bid = item.bids.order_by('-amount').first()
+        table_data.append([
+            item.title,
+            item.category.name,
+            f"${item.starting_price}",
+            f"${highest_bid.amount}" if highest_bid else "No bids",
+            item.end_time.strftime('%Y-%m-%d %H:%M:%S')
+        ])
+
+    table = Table(table_data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.aliceblue),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+
+    content.append(table)
+    doc.build(content)
+
+    pdf = buffer.getvalue()
+    buffer.close()
+    response.write(pdf)
+
+    return response
+@user_passes_test(is_admin)
+def report_user_table(request):
+    users = User.objects.all()
+    return render(request, 'auction/report_user_table.html', {'users': users})
