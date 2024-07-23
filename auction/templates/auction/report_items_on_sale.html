@@ -1,18 +1,32 @@
 {% extends 'auction/base.html' %}
+
 {% block title %}Items On Sale Report{% endblock %}
+
 {% block content %}
 <style>
-    .container .table a {
-        color: #17a2b8 !important;
-        transition: color 0.3s ease;
-    }
-    .container .table a:hover {
-        color: #e83e8c !important;
-    }
+  .container a {
+    color: #17a2b8 !important;
+    transition: color 0.3s ease;
+  }
+
+  .container a:hover {
+    color: #e83e8c !important;
+  }
 </style>
 <div class="container mt-4">
     <h1 class="mb-4">Items On Sale Report</h1>
-    <a href="{% url 'download_items_on_sale_report' %}" class="btn btn-info mb-4">Download PDF</a>
+    <form method="get" class="mb-4" id="filter-form">
+        <div class="form-group">
+            <label for="category">Select Category:</label>
+            <select id="category" name="category" class="form-control">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category.id == selected_category_id %}selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="button" class="btn btn-info mb-4" onclick="window.location.href='{% url 'download_items_on_sale_report' %}?category={{ selected_category_id }}'">Download Report</button>
+    </form>
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -24,16 +38,27 @@
             </tr>
         </thead>
         <tbody>
-            {% for item in item_bids %}
-            <tr>
-                <td><a href="{% url 'item_detail' item.item.id %}">{{ item.item.title }}</a></td>
-                <td><a href="{% url 'item_list' item.item.category.id %}">{{ item.item.category.name }}</a></td>
-                <td>${{ item.item.starting_price }}</td>
-                <td>${{ item.highest_bid }}</td>
-                <td>{{ item.item.end_time }}</td>
-            </tr>
+            {% for item_bid in item_bids %}
+                <tr>
+                    <td><a href="{% url 'item_detail' item_bid.item.id %}" class="text-primary">{{ item_bid.item.title }}</a></td>
+                    <td><a href="{% url 'item_list' item_bid.item.category.id %}" class="text-primary">{{ item_bid.item.category.name }}</a></td>
+                    <td>${{ item_bid.item.starting_price }}</td>
+                    <td>{{ item_bid.highest_bid }}</td>
+                    <td>{{ item_bid.item.end_time|date:'F j, Y g:i A' }}</td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const categoryInput = document.getElementById('category');
+        const form = document.getElementById('filter-form');
+
+        categoryInput.addEventListener('change', function() {
+            form.submit();
+        });
+    });
+</script>
 {% endblock %}

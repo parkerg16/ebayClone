@@ -204,7 +204,12 @@ def is_admin(user):
 
 @user_passes_test(is_admin)
 def report_items_on_sale(request):
+    categories = Category.objects.all()
+    selected_category_id = request.GET.get('category')
+
     items = Item.objects.filter(end_time__gt=timezone.now()).prefetch_related('bids')
+    if selected_category_id:
+        items = items.filter(category_id=int(selected_category_id))
     item_bids = []
     for item in items:
         highest_bid = item.bids.order_by('-amount').first()
@@ -212,12 +217,31 @@ def report_items_on_sale(request):
             'item': item,
             'highest_bid': highest_bid.amount if highest_bid else 'No bids'
         })
-    return render(request, 'auction/report_items_on_sale.html', {'item_bids': item_bids})
+    return render(request, 'auction/report_items_on_sale.html', {
+        'item_bids': item_bids,
+        'categories': categories,
+        'selected_category_id': int(selected_category_id) if selected_category_id else None,
+    })
+from django.contrib.auth.decorators import user_passes_test, login_required
+from django.http import HttpResponse
+from django.utils import timezone
+from io import BytesIO
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from .models import Item, Category
 
 
 @user_passes_test(is_admin)
 def download_items_on_sale_report(request):
+    selected_category_id = request.GET.get('category')
+
     items = Item.objects.filter(end_time__gt=timezone.now()).prefetch_related('bids')
+
+    if selected_category_id and selected_category_id != 'None':
+        items = items.filter(category_id=int(selected_category_id))
+
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="items_on_sale_report.pdf"'
 
@@ -237,7 +261,7 @@ def download_items_on_sale_report(request):
             item.category.name,
             f"${item.starting_price}",
             f"${highest_bid.amount}" if highest_bid else "No bids",
-            item.end_time.strftime('%Y-%m-%d %H:%M:%S')
+            item.end_time.strftime('%B %d, %Y %I:%M %p')
         ])
 
     table = Table(table_data)
